@@ -13,7 +13,8 @@ import config from '../ChatBot/config.js';
 import MessageParser from '../ChatBot/MessageParser.js';
 import ActionProvider from '../ChatBot/ActionProvider.js';
 import GraphPanel from '../GraphConstruct/GraphPanel.js';
-
+import FrameRender from '../FrameRender/FrameRender.js';
+import CamRender from '../FrameRender/CamRender.js';
 var json = {
   global: { tabEnableClose: false },
   borders: [
@@ -62,13 +63,28 @@ var json = {
           },
           {
             "type": "tabset",
-            "weight": 40,
+            "weight": 50,
             "selected": 0,
             "children": [
               {
                 "type": "tab",
-                "name": "Cam",
+                "name": "Gripper Cam",
                 "component": "cam"
+              },
+              {
+                "type": "tab",
+                "name": "Screw Driver Cam",
+                "component": "cam"
+              }, 
+              {
+                "type": "tab",
+                "name": "BEV Cam",
+                "component": "cam"
+              },
+              {
+                "type": "tab",
+                "name": "VLM capture",
+                "component": "vlm_frame"
               }
             ]
           },
@@ -154,7 +170,9 @@ const HomePage = () => {
     switch (component) {
 
       case "cam":
-        return (<div className="cam">Cam is under development</div>);
+        return (<div className="cam"><CamRender /></div>);
+      case "vlm_frame":
+          return (<div className="vlm_frame"><FrameRender /></div>);
       case "graph":
         return (<div className="graph">
           <GraphPanel
