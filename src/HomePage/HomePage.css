@@ -1,0 +1,44 @@
+.panel {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    border: 1px solid #555;
+    box-sizing: border-box;
+  }
+  #dropdownlabel {
+    padding: 18px 12px 10px 20px; /* Adjust as needed for each side */
+  }
+
+  #dropdown {
+    padding: 8px 10px 8px 10px; /* Adjust as needed for each side */
+  }
+
+  #layerspacing_label{
+    padding: 8px 26px 8px 10px;
+  }
+  #layerspacing{
+  width: 50px
+  }
+  #columnspacing_label{
+    padding: 8px 10px 8px 10px;
+  }
+  #columnspacing{
+
+    width: 50px
+    }
+
+
+  .cam {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* or a fixed height */
+  }
+  .knowlagebase {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* or a fixed height */
+  }
