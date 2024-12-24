@@ -14,7 +14,11 @@ import MessageParser from '../ChatBot/MessageParser.js';
 import ActionProvider from '../ChatBot/ActionProvider.js';
 import GraphPanel from '../GraphConstruct/GraphPanel.js';
 import FrameRender from '../FrameRender/FrameRender.js';
-import CamRender from '../FrameRender/CamRender.js';
+import BEV_FrameRender from '../FrameRender/BEV_FrameRender.js';
+import GripperFrameRender from '../FrameRender/GripperFrameRender.js';
+import ScrewDriverFrameRender from '../FrameRender/ScrewDriverFrameRender.js';
+import VLM_FrameRender from '../FrameRender/VLM_FrameRender.js';
+
 var json = {
   global: { tabEnableClose: false },
   borders: [
@@ -69,22 +73,22 @@ var json = {
               {
                 "type": "tab",
                 "name": "Gripper Cam",
-                "component": "cam"
+                "component": "GripperFrameRender"
               },
               {
                 "type": "tab",
                 "name": "Screw Driver Cam",
-                "component": "cam"
-              }, 
+                "component": "ScrewDriverFrameRender"
+              },
               {
                 "type": "tab",
                 "name": "BEV Cam",
-                "component": "cam"
+                "component": "BEV_FrameRender"
               },
               {
                 "type": "tab",
                 "name": "VLM capture",
-                "component": "vlm_frame"
+                "component": "VLM_FrameRender"
               }
             ]
           },
@@ -169,10 +173,14 @@ const HomePage = () => {
     var component = node.getComponent();
     switch (component) {
 
-      case "cam":
-        return (<div className="cam"><CamRender /></div>);
-      case "vlm_frame":
-          return (<div className="vlm_frame"><FrameRender /></div>);
+      case "GripperFrameRender":
+        return (<div className="GripperFrameRender"><GripperFrameRender /></div>);
+      case "ScrewDriverFrameRender":
+        return (<div className="ScrewDriverFrameRender"><ScrewDriverFrameRender /></div>);
+      case "BEV_FrameRender":
+        return (<div className="BEV_FrameRender"><BEV_FrameRender /></div>);
+      case "VLM_FrameRender":
+        return (<div className="VLM_FrameRender"><VLM_FrameRender /></div>);
       case "graph":
         return (<div className="graph">
           <GraphPanel

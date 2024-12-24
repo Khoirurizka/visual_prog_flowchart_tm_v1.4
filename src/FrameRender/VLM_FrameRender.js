@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 
-function FrameRender() {
+const url_gripper_frame ="http://localhost:5001/vlm_frame_feed"
+
+function VLM_FrameRender() {
   const [videoAvailable, setVideoAvailable] = useState(true);
   const [imageKey, setImageKey] = useState(0); // To force image reload
 
   const checkVideoFeed = async () => {
     try {
-      const response = await fetch("http://localhost:5001/video_feed", {
+      const response = await fetch(url_gripper_frame, {
         method: 'HEAD',
       });
       return response.ok; // Returns true if the feed is available
@@ -26,28 +28,43 @@ function FrameRender() {
   };
 
   return (
-    <div>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '370px', // Full viewport height for vertical centering
+        textAlign: 'center',
+      }}
+    >
       {videoAvailable ? (
         <img
           key={imageKey} // Unique key to force reload
-          src="http://localhost:5001/video_feed"
+          src={url_gripper_frame}
           alt="Cam"
-          style={{ width: '100%', height: 'auto' }}
+          style={{
+            width: '100%',
+            height: 'auto',
+            maxWidth: '600px', // Ensures the image scales properly
+          }}
           onAnimationEnd={() => console.log('Animation ended')}
           onError={handleImageError}
         />
       ) : (
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-          <p>Video feed unavailable</p>
+        <div style={{ padding: '20px' }}>
+          <p>VLM Capture is not unavailable, please update manually with refresh button.</p>
         </div>
       )}
-      <div style={{ textAlign: 'center', marginTop: '10px' }}>
+      <div style={{ marginTop: '10px' }}>
         <button onClick={handleRefresh} style={{ padding: '5px 20px', fontSize: '12px' }}>
           Refresh
         </button>
       </div>
     </div>
+
   );
 }
 
-export default FrameRender;
+
+export default VLM_FrameRender;

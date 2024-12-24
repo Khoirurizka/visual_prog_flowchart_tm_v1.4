@@ -4,8 +4,8 @@ import requests
 
 app = Flask(__name__)
 
-url = "http://localhost:5000/LLM_message_response"
-
+#url = "http://localhost:5000/LLM_message_response"
+url = "https://gai.hucenrotia.ngrok.dev/LLM_message_response"
 @app.route('/LLM_reciever_prompt', methods=['POST'])
 def receive_string():
     try:
