@@ -1,34 +1,50 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-const url_gripper_frame ="http://localhost:5001/screw_driver_frame_feed"
-
+const { ipcRenderer } = window.require("electron");
 function ScrewDriverFrameRender() {
-  const [videoAvailable, setVideoAvailable] = useState(true);
-  const [imageKey, setImageKey] = useState(0); // To force image reload
+  const [frameReceived, setframeReceived] = useState(null);
 
-  const checkVideoFeed = async () => {
-    try {
-      const response = await fetch(url_gripper_frame, {
-        method: 'HEAD',
-      });
-      return response.ok; // Returns true if the feed is available
-    } catch (error) {
-      return false; // Returns false if an error occurs
-    }
-  };
+  useEffect(() => {
+    // Listen for 'increment-timer' event from Electron main process
+    ipcRenderer.on("screw_diver_capture", (event, File_image) => {
+      try {
+        console.log("Received data from main process:", File_image.image);
 
-  const handleRefresh = async () => {
-    const isAvailable = await checkVideoFeed();
-    setVideoAvailable(isAvailable);
-    setImageKey((prevKey) => prevKey + 1); // Force image reload by updating key
-  };
+        // Parse and update state with the respective arrays
+        setframeReceived(File_image.image);
 
-  const handleImageError = () => {
-    setVideoAvailable(false);
-  };
+      } catch (error) {
+        console.error("Error parsing JSON data:", error);
+      }
+    });
+  }, []);
+
 
   return (
-    <div
+    <div>
+      {frameReceived ? (
+        <img
+          src={`data:image/jpeg;base64,${frameReceived}`}
+          alt="Received"
+          style={{ width: '800px', height: 'auto' }}
+        />
+      ) : (
+        <div style={{ paddingTop: '150px', paddingBottom: '150px', paddingLeft: '20px', paddingRight: '20px' }}>
+          <p>Screw driver capture is not unavailable, please wait form robot.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default ScrewDriverFrameRender;
+
+//const url_gripper_frame ="http://127.0.0.1:7000/screw_driver_frame_feed"
+
+/*
+  const [videoAvailable, setVideoAvailable] = useState(true);
+  const [imageKey, setImageKey] = useState(0); // To force image reload
+ <div
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -63,7 +79,4 @@ function ScrewDriverFrameRender() {
       </div>
     </div>
 
-  );
-}
-
-export default ScrewDriverFrameRender;
+*/

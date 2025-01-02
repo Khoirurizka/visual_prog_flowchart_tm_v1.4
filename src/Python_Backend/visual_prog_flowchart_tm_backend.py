@@ -6,7 +6,8 @@ import time
 
 app = Flask(__name__)
 url_update_graph_and_chat = "http://localhost:6000/update_graph_and_chat"
-url_LLM_server = "http://127.0.0.1:7000/LLM_reciever_prompt"
+#url_LLM_server = "http://127.0.0.1:9000/LLM_reciever_prompt"
+url_LLM_server = "https://9cf7-140-113-149-84.ngrok-free.app/LLM_reciever_prompt"
 
 LLM_message="" #"helo I am LLM"
 output_pddl_str ="" # "\n(find red_wire)\n(pickup arm1 red_wire table)\n(insert arm1 red_wire power_supply_5)\n(putdown arm1 red_wire power_supply_5)\n(lock arm2 red_wire power_supply_5)"
@@ -272,7 +273,7 @@ def receive_string():
         print("\njson")
         print(post_data)
         send_data_to_url(url_update_graph_and_chat,post_data)
-
+        
         return jsonify({'status': 'success'}), 200
     except Exception as e:
         print(f"Error: {e}")
@@ -280,5 +281,5 @@ def receive_string():
 
 if __name__ == "__main__":
    # start_main()
-    app.run(port=5000, debug=True)
+    app.run(host='127.0.0.2',port=8000, debug=True)
 

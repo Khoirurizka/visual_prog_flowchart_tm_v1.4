@@ -56,6 +56,13 @@ function setupExpressServer() {
 
     res.json({ status: 'success', message: 'LLM_message_response received successfully' });
   });
+  server.post('/screw_diver_capture', (req, res) => {
+    // console.log('Received data:', req.body);
+    mainWindow.webContents.send("screw_diver_capture", req.body);
+
+    res.json({ status: 'success', message: 'screw_diver_capture received successfully' });
+  });
+   
   server.post('/update_graph_and_chat', (req, res) => {
     // console.log('Received data:', req.body);
     mainWindow.webContents.send("update_graph", req.body);
