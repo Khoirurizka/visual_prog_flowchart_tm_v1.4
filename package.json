@@ -25,6 +25,7 @@
     "react-chatbot-kit": "^2.2.2",
     "react-dom": "^18.3.1",
     "react-scripts": "5.0.1",
+    "wait-on": "^8.0.1",
     "web-vitals": "^2.1.4"
   },
   "main": "public/main.js",
@@ -34,7 +35,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "electron:run_backend":"python3 src/Python_Backend/visual_prog_flowchart_tm_backend.py",
+    "electron:run_backend": "python3 src/Python_Backend/visual_prog_flowchart_tm_backend.py",
     "electron:serve": "concurrently -k \"BROWSER=none npm start\" \"npm run electron:run_backend\" \"npm run electron:start\" ",
     "electron:build": "",
     "electron:start": "wait-on http://localhost:3000 && electron ."

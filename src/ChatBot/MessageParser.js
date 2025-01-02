@@ -15,7 +15,7 @@ const MessageParser = ({ children, actions }) => {
     try {
       console.log("Message:", message);
 
-      const response = await axios.post("http://127.0.0.1:5000/user_prompt_to_LLM_server", {
+      const response = await axios.post("http://127.0.0.2:8000/user_prompt_to_LLM_server", {
         message: message,
       });
 

@@ -4,8 +4,8 @@ import requests
 
 app = Flask(__name__)
 
-#url = "http://localhost:5000/LLM_message_response"
-url = "https://gai.hucenrotia.ngrok.dev/LLM_message_response"
+url = "http://127.0.0.2:8000/LLM_message_response"
+#url = "https://gai.hucenrotia.ngrok.dev/LLM_message_response"
 @app.route('/LLM_reciever_prompt', methods=['POST'])
 def receive_string():
     try:
@@ -16,8 +16,8 @@ def receive_string():
         message = data['message']
         print(message)
         post_data = {
-            'message': "test LLM",
-            'output_pddl': "\n(find red_wire)\n(pickup arm1 red_wire table)\n(insert arm1 red_wire power_supply_5)\n(putdown arm1 red_wire power_supply_5)\n(lock arm2 red_wire power_supply_5)"
+            'message': "Ok, I will install the blue wire to the power supply terminal 5.",
+            'output_pddl': "\n(find blue_wire)\n(pickup arm1 blue_wire table)\n(insert arm1 blue_wire power_supply_5)\n(putdown arm1 blue_wire power_supply_5)\n(lock arm2 blue_wire power_supply_5)"
             }
         
         response = requests.post(url, json=post_data)
@@ -29,6 +29,6 @@ def receive_string():
         return jsonify({'error': 'An error occurred'}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='127.0.0.1', port=7000)
+    app.run(debug=True, host='127.0.0.1', port=9000)
 
 

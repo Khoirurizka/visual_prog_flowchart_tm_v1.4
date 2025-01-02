@@ -63,7 +63,7 @@ def run_camera_UI(cam):
 if __name__ == "__main__":
     cam = CameraThread(src=0)
     cam.start()
-    threading.Thread(target=lambda: app.run(host='127.0.0.1', port=5001, debug=False), daemon=True).start()
+    threading.Thread(target=lambda: app.run(host='127.0.0.1', port=8000, debug=False), daemon=True).start()
 
     try:
         run_camera_UI(cam)
