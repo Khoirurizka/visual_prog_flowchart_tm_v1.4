@@ -3,15 +3,15 @@ import React, { useEffect, useState } from 'react';
 const { ipcRenderer } = window.require("electron");
 function ScrewDriverFrameRender() {
   const [frameReceived, setframeReceived] = useState(null);
-/*
+
   useEffect(() => {
     // Listen for 'increment-timer' event from Electron main process
-    ipcRenderer.on("screw_diver_capture", (event, File_image) => {
+    ipcRenderer.on("VLM_capture", (event, vlm_frame) => {
       try {
-        console.log("Received data from main process:", File_image.image);
+        // console.log("Received data from main process:", vlm_frame);
 
         // Parse and update state with the respective arrays
-        setframeReceived(File_image.image);
+        setframeReceived(vlm_frame);
 
       } catch (error) {
         console.error("Error parsing JSON data:", error);
@@ -19,7 +19,6 @@ function ScrewDriverFrameRender() {
     });
   }, []);
 
-*/
   return (
     <div>
       {frameReceived ? (

@@ -3,15 +3,15 @@ from flask import Flask, request, jsonify
 import requests
 import threading
 import time
+import json
 
 app = Flask(__name__)
-url_update_graph_and_chat = "http://localhost:6000/update_graph_and_chat"
-#url_LLM_server = "http://127.0.0.1:9000/LLM_reciever_prompt"
-url_LLM_server = "https://9cf7-140-113-149-84.ngrok-free.app/LLM_reciever_prompt"
 
-LLM_message="" #"helo I am LLM"
+url_LLM_server = "http://127.0.0.1:9000/AI_reciever_prompt_image" #Dummy LLM VLM API
+#url_LLM_server = "https://gai.hucenrotia.ngrok.dev/AI_reciever_prompt_image" #Hucenrotia_LLM_server
+
+LLM_message="" #"helo I am LLM tester"
 output_pddl_str ="" # "\n(find red_wire)\n(pickup arm1 red_wire table)\n(insert arm1 red_wire power_supply_5)\n(putdown arm1 red_wire power_supply_5)\n(lock arm2 red_wire power_supply_5)"
-
 
 robots_list=["arm1","arm2"]
 actions_list=["pickup","lock", "insert", "putdown","find"]
@@ -61,11 +61,10 @@ def extract_basic_keyPharse(text):
 
 def convert_PDDL_line_to_jsonGraph(extacted_commands):
     node = []
-    link=[]
+    link = []
     robot={'-':{'start':0,'end':0}} #to prevert null value
     last_key_id_on_each_robot={'-':-1}
     has_robot=True
-
 
     ### Initialize robot start-end node
     for i in range(len(extacted_commands)):
@@ -102,7 +101,7 @@ def convert_PDDL_line_to_jsonGraph(extacted_commands):
     for i in range(len(extacted_commands)):
         # Draw node
         if (i==0):
-            #print(list(robot.keys())[1])
+            # print(list(robot.keys())[1])
             prev_robot_active=list(robot.keys())[1]
         elif(i>0 and extacted_commands[i].robot!=prev_robot_active):
             ### add wait node for switch robot
@@ -139,7 +138,7 @@ def convert_PDDL_line_to_jsonGraph(extacted_commands):
             give_key_id=give_key_id+1
 
             prev_robot_active=extacted_commands[i].robot
-            #print(prev_robot_active)
+            # print(prev_robot_active)
 
         ### add main node
         node_entry = {
@@ -186,45 +185,76 @@ def convert_PDDL_line_to_jsonGraph(extacted_commands):
 
     return node,link
 
-@app.route('/')
-def home():
-    return jsonify({"status": "Flask app running", "message": "Automatic data sending to Electron enabled"})
-
 # Function to send data automatically
 def send_data_to_url(url,data):
-    while True:
-        try:
-            response = requests.post(url, json=data)
-            print(f"Data sent: {response.status_code}, Response: {response.text}")
-        except requests.exceptions.RequestException as e:
-            print(f"Error sending data: {e}")
-        time.sleep(10)  # Wait 10 seconds before sending data again
-
+    try:
+        response = requests.post(url, json=data)
+        print(f"Data sent: {response.status_code}, Response: {response.text}")
+        return response.text
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending data: {e}")
+        return (f"Error sending data: {e}")
+"""
 def convert_pddl_and_send_to_electron():
     node = []
     link=[]
-    while True:
+    pddl_lines=extract_pddl_lines(output_pddl_str)
+    for pddl_line in pddl_lines:
+        extacted_command=extract_basic_keyPharse(pddl_line)
+        extacted_commands.append(extacted_command)
+    node,link=convert_PDDL_line_to_jsonGraph(extacted_commands)
+    message="okay"
+    print(node)
+    print("\n")
+    print(link)
+    post_data = {'message': message,
+        'linkDataArray': link,
+        'nodeDataArray': node
+        }
+    print("\njson")
+    print(post_data)
+    send_data_to_url(post_data)
+"""
+
+def process_data_from_AI(data_json):
+    extacted_commands=[]
+    node = []
+    link=[]
+    output_pddl_str=""
+    try:
+        data = data_json #request.get_json()
+        if not data or 'message' not in data:
+            return jsonify({'error': 'Invalid data format'}), 400
+
+        output_pddl_str = data['output_pddl']
+        
+        print(f"Received output_pddl: {output_pddl_str}")
+
         pddl_lines=extract_pddl_lines(output_pddl_str)
         for pddl_line in pddl_lines:
             extacted_command=extract_basic_keyPharse(pddl_line)
             extacted_commands.append(extacted_command)
+
         node,link=convert_PDDL_line_to_jsonGraph(extacted_commands)
-        message="okay"
         print(node)
         print("\n")
         print(link)
-        post_data = {'message': message,
-            'linkDataArray': link,
-            'nodeDataArray': node
-            }
+        post_data = {'message': data['message'],
+                     'vlm_frame':data['vlm_frame'],
+                     'linkDataArray': link,
+                     'nodeDataArray': node
+                     }
         print("\njson")
         print(post_data)
-        send_data_to_url("p".post_data)
+        
+        return post_data
+    except Exception as e:
+        print(f"Error: {e}")
+        return 'Error: An error occurred'
 
-def start_main():
-    thread = threading.Thread(target=convert_pddl_and_send_to_electron)
-    thread.daemon = True
-    thread.start()
+@app.route('/')
+def home():
+    return jsonify({"status": "Flask app running", "message": "Automatic data sending to Electron enabled"})
 
 @app.route('/user_prompt_to_LLM_server', methods=['POST'])
 def user_prompt_to_LLM_server():
@@ -235,49 +265,23 @@ def user_prompt_to_LLM_server():
 
         message = data['message']
         print(f"Received message: {message}")
-        post_data = {'message': message}
-        print("\njson")
-        print(post_data)
-        send_data_to_url(url_LLM_server,post_data)
+        # post_data = {'message': message}
+        # print(f"json :{post_data}")
+        response =  send_data_to_url(url_LLM_server,data)
+        response_json= json.loads(response)
+        print(f"data_recieved: {response_json["data"]}")
 
-        return jsonify({'status': 'success'}), 200
+        result_from_AI= process_data_from_AI(response_json["data"])
+        print(result_from_AI)
+        return jsonify({'result_from_AI':result_from_AI,'status': 'success'}), 200
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({'error': 'An error occurred'}), 500
 
-
-@app.route('/LLM_message_response', methods=['POST'])
-def receive_string():
-    try:
-        data = request.get_json()
-        if not data or 'message' not in data:
-            return jsonify({'error': 'Invalid data format'}), 400
-
-        LLM_message = data['message']
-        output_pddl_str = data['output_pddl']
-        
-        print(f"Received message: {LLM_message}")
-        print(f"Received output_pddl: {output_pddl_str}")
-        pddl_lines=extract_pddl_lines(output_pddl_str)
-        for pddl_line in pddl_lines:
-            extacted_command=extract_basic_keyPharse(pddl_line)
-            extacted_commands.append(extacted_command)
-        node,link=convert_PDDL_line_to_jsonGraph(extacted_commands)
-        print(node)
-        print("\n")
-        print(link)
-        post_data = {'message': LLM_message,
-            'linkDataArray': link,
-            'nodeDataArray': node
-            }
-        print("\njson")
-        print(post_data)
-        send_data_to_url(url_update_graph_and_chat,post_data)
-        
-        return jsonify({'status': 'success'}), 200
-    except Exception as e:
-        print(f"Error: {e}")
-        return jsonify({'error': 'An error occurred'}), 500
+#def start_main():
+   # thread = threading.Thread(target=convert_pddl_and_send_to_electron)
+    #thread.daemon = True
+   # thread.start()
 
 if __name__ == "__main__":
    # start_main()

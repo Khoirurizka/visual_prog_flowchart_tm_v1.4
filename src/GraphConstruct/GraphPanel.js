@@ -5,18 +5,6 @@ import './GraphPanel.css';  // contains .diagram-component CSS
 
 const { ipcRenderer } = window.require("electron");
 
-let nodeDataArray_Json = { key: "initial value" }; // JSON object
-/*
-const set_nodeDataArray_Json = (newValue) => {
-  nodeDataArray_Json = newValue;
-    console.log(`t is now:`, nodeDataArray_Json);
-};
-
-const get_nodeDataArray_Json = () => nodeDataArray_Json;
-
-module.exports = { set_nodeDataArray_Json, get_nodeDataArray_Json };
-*/
-
 function initDiagram(layerspacing, columnSpacing) {
   const diagram = new go.Diagram({
     'undoManager.isEnabled': true,
@@ -186,8 +174,8 @@ function handleModelChange(changes) {
 }
 
 function DiagramComponent({ layerspacing = 30, columnSpacing = 30 }) {
-  const [nodeDataArray, setNodeDataArray] = useState([]);
-  const [linkDataArray, setLinkDataArray] = useState([]);
+  let [nodeDataArray, setNodeDataArray] = useState([]);
+  let [linkDataArray, setLinkDataArray] = useState([]);
 
   const diagramRef = React.useRef(null);
 
@@ -196,7 +184,9 @@ function DiagramComponent({ layerspacing = 30, columnSpacing = 30 }) {
     ipcRenderer.on("update_graph", (event, jsonData) => {
       try {
         console.log("Received data from main process:", jsonData);
-
+        //clear Node and Link
+        setNodeDataArray([]);
+        setLinkDataArray([]);
         // Parse and update state with the respective arrays
         setNodeDataArray(jsonData.nodeDataArray);
         setLinkDataArray(jsonData.linkDataArray);

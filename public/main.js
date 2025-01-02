@@ -4,9 +4,7 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const { Console } = require('console');
-//const { set_nodeDataArray_Json, get_nodeDataArray_Json } = require(path.resolve(__dirname, '../src/GraphConstruct/GraphPanel.js'));
 
-//const { set_nodeDataArray_Json, get_nodeDataArray_Json } = require(path.resolve(__dirname, '../src/GraphConstruct/GraphPanel.js'));
 let mainWindow;
 
 require('@electron/remote/main').initialize()
@@ -38,43 +36,36 @@ function createMainWindow() {
   mainWindow.loadURL(startUrl);
 }
 
+// Listening for collecting local resource
 // Function to set up the Express.js server
 function setupExpressServer() {
   const server = express();
   server.use(bodyParser.json());
 
-  // Define POST route to receive data
-  server.post('/update_graph', (req, res) => {
-    // console.log('Received data:', req.body);
-    mainWindow.webContents.send("update_graph", req.body);
-
-    res.json({ status: 'success', message: 'update_graph received successfully' });
-  });
-  server.post('/LLM_message_response', (req, res) => {
-    // console.log('Received data:', req.body);
-    mainWindow.webContents.send("response_from_LLM", req.body);
-
-    res.json({ status: 'success', message: 'LLM_message_response received successfully' });
-  });
+  //temporary
   server.post('/screw_diver_capture', (req, res) => {
     // console.log('Received data:', req.body);
     mainWindow.webContents.send("screw_diver_capture", req.body);
 
     res.json({ status: 'success', message: 'screw_diver_capture received successfully' });
   });
-   
-  server.post('/update_graph_and_chat', (req, res) => {
-    // console.log('Received data:', req.body);
-    mainWindow.webContents.send("update_graph", req.body);
-    mainWindow.webContents.send("response_from_LLM", req.body);
 
-    res.json({ status: 'success', message: 'update_graph received successfully' });
-  });
   // Start the server on port 3000
   server.listen(6000, () => {
     console.log('Express server is running on http://localhost:6000');
   });
 }
+
+// from internal electron app
+ipcMain.on('update_main_graph_chat_response_from_AI', (event, jsonData) => {
+  // Send a message back to the renderer
+  mainWindow.webContents.send("update_graph", jsonData);
+  mainWindow.webContents.send("response_from_LLM", jsonData);
+});
+ipcMain.on('update_VLM_frame_from_AI', (event, frame) => {
+  // Send a message back to the renderer
+  mainWindow.webContents.send("VLM_capture", frame);
+});
 
 app.whenReady().then(() => {
   setupExpressServer();
