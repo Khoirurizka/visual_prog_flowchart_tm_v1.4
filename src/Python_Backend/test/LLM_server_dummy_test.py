@@ -38,7 +38,7 @@ def receive_string():
         message = data['message']
         print(message)
         post_data = {
-            'message': "Ok, I will install the blue wire to the power supply terminal 5.",
+            'message': "Ok, I will install the blue wire.",
             'output_pddl': "\n(find blue_wire)\n(pickup arm1 blue_wire table)\n(insert arm1 blue_wire power_supply_5)\n(putdown arm1 blue_wire power_supply_5)\n(lock arm2 blue_wire power_supply_5)",
             'vlm_frame': base64_image
             }

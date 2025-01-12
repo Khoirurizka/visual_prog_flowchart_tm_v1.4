@@ -230,6 +230,62 @@ def process_data_from_AI(data_json):
         
         print(f"Received output_pddl: {output_pddl_str}")
 
+        for command in output_pddl_str:
+            # extract action, robot_id, object, position
+            match = re.match(r"\((\w+)(?:\s+(\w+))?\s+(\w+)(?:\s+(\w+))?\)", command)
+            if match:
+                action = match.group(1)
+                robot_id = match.group(2)
+                obj = match.group(3)
+                position = match.group(4)
+                
+                # extract terminal number if position contains 'power_supply_X'
+                terminal = None
+                if position and "power_supply" in position:
+                    terminal_match = re.search(r"power_supply_(\d+)", position)
+                    if terminal_match:
+                        terminal = terminal_match.group(1)
+                
+                parsed_tasks.append({
+                    "action": action,
+                    "robot_id": robot_id,
+                    "object": obj,
+                    "position": position,
+                    "terminal": terminal
+                })
+
+        print(parsed_tasks)
+
+        # runt the robot
+        # if robot_id == "arm1":
+        #     controller_arm1(subtasks=[action], coords=[[0,0,0]])
+
+        #put the action code here
+        #if arm1 -->
+        #    run
+        # elif task == 'find':
+        #     arm2.get_logger().info("Executing 'find' task.")
+        #     if arm2.find():
+        #         arm2.get_logger().info("Image successfully processed in 'find' task.")
+        #     else:
+        #         arm2.get_logger().error("Failed to process image in 'find' task.")
+        #     scalled_frame = cv2.resize(arm2.image_frame, (480, 320))
+        #     # Encode the frame into bytes (JPEG format)
+        #     _, img_encoded = cv2.imencode('.jpg', scalled_frame)
+
+        #     # Convert to bytes for sending
+        #     base64_image = base64.b64encode(img_encoded)
+        #     response = requests.post(url_update_screw_diver_capture, json={"image": base64_image})
+        #     print(f"Server response: {response.text}")
+
+
+# [1] Received output_pddl: 
+# [1] (find blue_wire)
+# [1] (pickup arm1 blue_wire table)
+# [1] (insert arm1 blue_wire power_supply_5)
+# [1] (putdown arm1 blue_wire power_supply_5)
+# [1] (lock arm2 blue_wire power_supply_5)
+
         pddl_lines=extract_pddl_lines(output_pddl_str)
         for pddl_line in pddl_lines:
             extacted_command=extract_basic_keyPharse(pddl_line)
@@ -269,9 +325,9 @@ def user_prompt_to_LLM_server():
         # print(f"json :{post_data}")
         response =  send_data_to_url(url_LLM_server,data)
         response_json= json.loads(response)
-        print(f"data_recieved: {response_json["data"]}")
+        print(f"data_recieved: {response_json['data']}")
 
-        result_from_AI= process_data_from_AI(response_json["data"])
+        result_from_AI= process_data_from_AI(response_json['data'])
         print(result_from_AI)
         return jsonify({'result_from_AI':result_from_AI,'status': 'success'}), 200
     except Exception as e:
