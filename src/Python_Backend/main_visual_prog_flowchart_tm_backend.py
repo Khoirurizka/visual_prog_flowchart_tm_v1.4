@@ -62,6 +62,7 @@ def extract_basic_keyPharse(text):
 def convert_PDDL_line_to_jsonGraph(extacted_commands):
     node = []
     link = []
+    executable=[]
     robot={'-':{'start':0,'end':0}} #to prevert null value
     last_key_id_on_each_robot={'-':-1}
     has_robot=True
@@ -79,6 +80,7 @@ def convert_PDDL_line_to_jsonGraph(extacted_commands):
             # print(start_robot_node,end_robot_node)
             node_entry = {
             "key": start_robot_node,
+            "robot": str(extacted_commands[i].robot),
             "command": "Start_"+str(extacted_commands[i].robot),
             "color": "lightblue",
             "category": "StartEnd"
@@ -86,6 +88,7 @@ def convert_PDDL_line_to_jsonGraph(extacted_commands):
             node.append(node_entry)
             node_entry = {
             "key": end_robot_node,
+            "robot": str(extacted_commands[i].robot),
             "command": "End_"+str(extacted_commands[i].robot),
             "color": "lightblue",
             "category": "StartEnd"
@@ -108,6 +111,7 @@ def convert_PDDL_line_to_jsonGraph(extacted_commands):
             # print(extacted_commands[i].robot)
             node_entry = {
             "key": give_key_id,
+            "robot": str(extacted_commands[i].robot),
             "command": "wait another",
             "color": "white",
             "category": "Process"
@@ -143,6 +147,7 @@ def convert_PDDL_line_to_jsonGraph(extacted_commands):
         ### add main node
         node_entry = {
             "key": give_key_id,
+            "robot": str(extacted_commands[i].robot),
             "command": extacted_commands[i].action,
             "color": "white",
             "category": "Process"
@@ -181,9 +186,37 @@ def convert_PDDL_line_to_jsonGraph(extacted_commands):
         link.append(link_entry)
 
         give_key_id=give_key_id+1
+    for i in range(len(robots_list)):
+        executable.append({'robot':robots_list[i], 'cmd_list': []})
+    #print(executable)
+    for item_link in link:
+        cmd_appear=False
 
+        node_key=""
+        for item_node in node:
+            if item_node['key']==item_link['to']:
+                node_key=item_node['robot']
+                if node_key=='-':
+                    node_key='arm2'
+               # print(node_key)
+                for executable_item in executable:
+                    if executable_item['robot']== node_key:
+                        executable_item['cmd_list'].append(item_node['command'])
+                        cmd_appear=True
+                        break
+                if cmd_appear:
+                    break
 
-    return node,link
+    for robot in executable:
+        cmd_list = robot['cmd_list']
+        cleaned_list = []
+        for i, cmd in enumerate(cmd_list):
+            # Add the command if it is not a duplicate of the previous command
+            if i == 0 or cmd != 'wait another' or cmd_list[i - 1] != 'wait another':
+                cleaned_list.append(cmd)
+        robot['cmd_list'] = cleaned_list
+    print(f"executable:{executable}")
+    return node,link, executable
 
 # Function to send data automatically
 def send_data_to_url(url,data):
@@ -194,27 +227,7 @@ def send_data_to_url(url,data):
     except requests.exceptions.RequestException as e:
         print(f"Error sending data: {e}")
         return (f"Error sending data: {e}")
-"""
-def convert_pddl_and_send_to_electron():
-    node = []
-    link=[]
-    pddl_lines=extract_pddl_lines(output_pddl_str)
-    for pddl_line in pddl_lines:
-        extacted_command=extract_basic_keyPharse(pddl_line)
-        extacted_commands.append(extacted_command)
-    node,link=convert_PDDL_line_to_jsonGraph(extacted_commands)
-    message="okay"
-    print(node)
-    print("\n")
-    print(link)
-    post_data = {'message': message,
-        'linkDataArray': link,
-        'nodeDataArray': node
-        }
-    print("\njson")
-    print(post_data)
-    send_data_to_url(post_data)
-"""
+
 
 def process_data_from_AI(data_json):
     extacted_commands=[]
@@ -245,39 +258,6 @@ def process_data_from_AI(data_json):
                     terminal_match = re.search(r"power_supply_(\d+)", position)
                     if terminal_match:
                         terminal = terminal_match.group(1)
-                
-                parsed_tasks.append({
-                    "action": action,
-                    "robot_id": robot_id,
-                    "object": obj,
-                    "position": position,
-                    "terminal": terminal
-                })
-
-        print(parsed_tasks)
-
-        # runt the robot
-        # if robot_id == "arm1":
-        #     controller_arm1(subtasks=[action], coords=[[0,0,0]])
-
-        #put the action code here
-        #if arm1 -->
-        #    run
-        # elif task == 'find':
-        #     arm2.get_logger().info("Executing 'find' task.")
-        #     if arm2.find():
-        #         arm2.get_logger().info("Image successfully processed in 'find' task.")
-        #     else:
-        #         arm2.get_logger().error("Failed to process image in 'find' task.")
-        #     scalled_frame = cv2.resize(arm2.image_frame, (480, 320))
-        #     # Encode the frame into bytes (JPEG format)
-        #     _, img_encoded = cv2.imencode('.jpg', scalled_frame)
-
-        #     # Convert to bytes for sending
-        #     base64_image = base64.b64encode(img_encoded)
-        #     response = requests.post(url_update_screw_diver_capture, json={"image": base64_image})
-        #     print(f"Server response: {response.text}")
-
 
 # [1] Received output_pddl: 
 # [1] (find blue_wire)
@@ -291,7 +271,7 @@ def process_data_from_AI(data_json):
             extacted_command=extract_basic_keyPharse(pddl_line)
             extacted_commands.append(extacted_command)
 
-        node,link=convert_PDDL_line_to_jsonGraph(extacted_commands)
+        node,link,executable=convert_PDDL_line_to_jsonGraph(extacted_commands)
         print(node)
         print("\n")
         print(link)

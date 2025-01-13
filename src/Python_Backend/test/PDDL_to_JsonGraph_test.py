@@ -4,8 +4,8 @@ import requests
 import threading
 import time
 
-app = Flask(__name__)
-url_update_graph = "http://localhost:6000/update_graph"
+#app = Flask(__name__)
+#url_update_graph = "http://localhost:6000/update_graph"
 
 output_pddl_str = "\n(find red_wire)\n(pickup arm1 red_wire table)\n(insert arm1 red_wire power_supply_5)\n(putdown arm1 red_wire power_supply_5)\n(lock arm2 red_wire power_supply_5)"
 
@@ -55,13 +55,14 @@ def extract_basic_keyPharse(text):
     # print(command_keypharse)
     return PDDL_line(command_keypharse)
 
+
 def convert_PDDL_line_to_jsonGraph(extacted_commands):
     node = []
-    link=[]
+    link = []
+    executable=[]
     robot={'-':{'start':0,'end':0}} #to prevert null value
     last_key_id_on_each_robot={'-':-1}
     has_robot=True
-
 
     ### Initialize robot start-end node
     for i in range(len(extacted_commands)):
@@ -76,6 +77,7 @@ def convert_PDDL_line_to_jsonGraph(extacted_commands):
             # print(start_robot_node,end_robot_node)
             node_entry = {
             "key": start_robot_node,
+            "robot": str(extacted_commands[i].robot),
             "command": "Start_"+str(extacted_commands[i].robot),
             "color": "lightblue",
             "category": "StartEnd"
@@ -83,6 +85,7 @@ def convert_PDDL_line_to_jsonGraph(extacted_commands):
             node.append(node_entry)
             node_entry = {
             "key": end_robot_node,
+            "robot": str(extacted_commands[i].robot),
             "command": "End_"+str(extacted_commands[i].robot),
             "color": "lightblue",
             "category": "StartEnd"
@@ -98,13 +101,14 @@ def convert_PDDL_line_to_jsonGraph(extacted_commands):
     for i in range(len(extacted_commands)):
         # Draw node
         if (i==0):
-            #print(list(robot.keys())[1])
+            # print(list(robot.keys())[1])
             prev_robot_active=list(robot.keys())[1]
         elif(i>0 and extacted_commands[i].robot!=prev_robot_active):
             ### add wait node for switch robot
             # print(extacted_commands[i].robot)
             node_entry = {
             "key": give_key_id,
+            "robot": str(extacted_commands[i].robot),
             "command": "wait another",
             "color": "white",
             "category": "Process"
@@ -135,11 +139,12 @@ def convert_PDDL_line_to_jsonGraph(extacted_commands):
             give_key_id=give_key_id+1
 
             prev_robot_active=extacted_commands[i].robot
-            #print(prev_robot_active)
+            # print(prev_robot_active)
 
         ### add main node
         node_entry = {
             "key": give_key_id,
+            "robot": str(extacted_commands[i].robot),
             "command": extacted_commands[i].action,
             "color": "white",
             "category": "Process"
@@ -178,10 +183,39 @@ def convert_PDDL_line_to_jsonGraph(extacted_commands):
         link.append(link_entry)
 
         give_key_id=give_key_id+1
+    for i in range(len(robots_list)):
+        executable.append({'robot':robots_list[i], 'cmd_list': []})
+    #print(executable)
 
+    for item_link in link:
+        cmd_appear=False
 
-    return node,link
+        node_key=""
+        for item_node in node:
+            if item_node['key']==item_link['to']:
+                node_key=item_node['robot']
+                if node_key=='-':
+                    node_key='arm2'
+                # print(node_key)
+                for executable_item in executable:
+                    if executable_item['robot']== node_key:
+                        executable_item['cmd_list'].append([item_node['command'],'0','1'])
+                        cmd_appear=True
+                        break
+                if cmd_appear:
+                    break
 
+    for robot in executable:
+        cmd_list = robot['cmd_list']
+        cleaned_list = []
+        for i, cmd in enumerate(cmd_list):
+            # Add the command if it is not a duplicate of the previous command
+            if i == 0 or cmd != 'wait another' or cmd_list[i - 1] != 'wait another':
+                cleaned_list.append(cmd)
+        robot['cmd_list'] = cleaned_list
+    print(f"executable:{executable}")
+    return node,link, executable
+'''
 @app.route('/')
 def home():
     return jsonify({"status": "Flask app running", "message": "Automatic data sending to Electron enabled"})
@@ -213,14 +247,30 @@ def convert_pddl_and_send_to_electron():
             }
         print("\njson")
         print(post_data)
-        send_data_to_electron(post_data)
+        break
+        # send_data_to_electron(post_data)
 
 def start_main():
     thread = threading.Thread(target=convert_pddl_and_send_to_electron)
     thread.daemon = True
     thread.start()
-
+'''
 if __name__ == "__main__":
-    start_main()
-    app.run(port=5000, debug=True)
+    pddl_lines=extract_pddl_lines(output_pddl_str)
+    for pddl_line in pddl_lines:
+        extacted_command=extract_basic_keyPharse(pddl_line)
+        extacted_commands.append(extacted_command)
+    node,link,executable=convert_PDDL_line_to_jsonGraph(extacted_commands)
+
+    print(node)
+    print("\n")
+    print(link)
+    post_data = {
+        'linkDataArray': link,
+        'nodeDataArray': node
+        }
+    print("\njson")
+    print(post_data) 
+    # start_main()
+    #app.run(port=5000, debug=True)
 
