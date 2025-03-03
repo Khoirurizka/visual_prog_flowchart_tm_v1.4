@@ -25,7 +25,7 @@ function createMainWindow() {
   });
 
   // Open DevTools for debugging
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   // Set startUrl to localhost:3000
   const startUrl = 'http://localhost:3000';

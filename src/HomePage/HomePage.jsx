@@ -60,8 +60,8 @@ var json = {
             "children": [
               {
                 "type": "tab",
-                "name": "Knowlagebase",
-                "component": "knowlagebase"
+                "name": "Action-function Library",
+                "component": "Action-function Library"
               },
             ]
           },
@@ -197,8 +197,8 @@ const HomePage = () => {
           />
         </div>
         );
-      case "knowlagebase":
-        return (<div className="knowlagebase">Knowladgebase is under development</div>);
+      case "Action-function Library":
+        return (<div className="Action-function Library">Action-function Library is under development</div>);
       case 'preferences':
         return (
           <Preferences

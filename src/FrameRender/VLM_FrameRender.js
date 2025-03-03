@@ -29,7 +29,7 @@ function ScrewDriverFrameRender() {
         />
       ) : (
         <div style={{ paddingTop: '150px', paddingBottom: '150px', paddingLeft: '20px', paddingRight: '20px' }}>
-          <p>VLM capture is not unavailable, please wait form robot.</p>
+          <p>VLM capture is unavailable, please wait for the robot.</p>
         </div>
       )}
     </div>
