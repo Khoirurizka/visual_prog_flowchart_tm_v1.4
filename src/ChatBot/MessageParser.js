@@ -21,7 +21,6 @@ const MessageParser = ({ children, actions }) => {
     });
   }, []);
 
-
   const parse = async (message) => {
     if (isSubmitting) {
       console.warn("Submission is already in progress. Please wait.");

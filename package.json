@@ -36,7 +36,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron:run_backend": "python3 src/Python_Backend/main_visual_prog_flowchart_tm_backend.py",
-    "electron:serve": "concurrently -k \"BROWSER=none npm start\" \"npm run electron:run_backend\" \"npm run electron:start\" ",
+    "electron:serve": "concurrently -k \"BROWSER=none npm start\" \"npm run electron:start\" ",
     "electron:build": "",
     "electron:start": "wait-on http://localhost:3000 && electron ."
   },
